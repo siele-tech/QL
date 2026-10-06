@@ -11,7 +11,7 @@ import { getOrg } from '../services/orgSettings.ts';
 import { localPhone, normalizeKePhone } from '../services/sms/provider.ts';
 import { achievements, repaymentProgress, scoreBand } from '../lending/behaviour.ts';
 import { evaluateMember } from '../lending/eligibility.ts';
-import { initiateRepayment, initiateRollover, loadLoan, publicProduct, quoteForMember, submitApplication } from '../lending/engine.ts';
+import { initiateRepayment, initiateRollover, loadLoan, publicProduct, quoteForMember, resendRepaymentPrompt, submitApplication } from '../lending/engine.ts';
 import { openOffer } from '../lending/offers.ts';
 import { quote } from '../lending/pricing.ts';
 import { productTerms } from '../lending/offerings.ts';
@@ -135,6 +135,12 @@ function payerPhone(phone?: string) {
 memberRouter.post('/loans/:id/repay', h(async (req, res) => {
   const body = parse(z.object({ amount: kesAmount, phone: z.string().max(20).optional() }), req.body);
   const tx = await initiateRepayment(req.actor!, req.params.id, body.amount, payerPhone(body.phone));
+  res.status(202).json(paymentView(tx));
+}));
+
+/** The M-PESA prompt did not arrive: send it again (same loan, amount and number). */
+memberRouter.post('/payments/:id/resend', rateLimit({ windowMs: 10 * 60_000, max: 3, key: (r) => 'resend:' + r.actor!.id }), h(async (req, res) => {
+  const tx = await resendRepaymentPrompt(req.actor!, req.params.id);
   res.status(202).json(paymentView(tx));
 }));
 

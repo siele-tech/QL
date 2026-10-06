@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { AlertTriangle, CheckCircle2, Info, Loader2, X, XCircle, RefreshCw, Inbox } from 'lucide-react';
 import { STATUS_LABEL, STATUS_TONE, type Tone } from '../format';
 import { ApiError } from '../api';
+import { t as tr } from '../i18n';
 
 // ───────── data hook with loading / error / reload ─────────
 /** Last good response per screen (in memory only). Cleared whenever the signed-in person changes. */
@@ -39,14 +40,14 @@ export function Loadable<T>({ q, children, skeleton }: { q: { data: T | null; er
   if (q.error && !q.data) return <ErrorState message={q.error.message} onRetry={() => q.reload()} />;
   return (
     <>
-      {q.error && q.data && <div className="stale-note" role="status">Showing the last saved details. <button type="button" onClick={() => q.reload(true)}>Refresh</button></div>}
+      {q.error && q.data && <div className="stale-note" role="status">{tr('Showing the last saved details.')} <button type="button" onClick={() => q.reload(true)}>{tr('Refresh')}</button></div>}
       {children(q.data as T)}
     </>
   );
 }
 
 export function SkeletonBlock({ rows = 3 }: { rows?: number }) {
-  return <div className="skeleton-wrap" aria-busy="true" aria-label="Loading">{Array.from({ length: rows }).map((_, i) => <div key={i} className="skeleton" style={{ width: `${90 - i * 12}%` }} />)}</div>;
+  return <div className="skeleton-wrap" aria-busy="true" aria-label={tr('Loading')}>{Array.from({ length: rows }).map((_, i) => <div key={i} className="skeleton" style={{ width: `${90 - i * 12}%` }} />)}</div>;
 }
 
 // ───────── buttons ─────────
@@ -70,7 +71,7 @@ export const Card = ({ children, className = '', title, action, pad = true }: { 
 
 export function Badge({ status, label, tone }: { status?: string; label?: string; tone?: Tone }) {
   const t = tone ?? (status ? STATUS_TONE[status] : 'neutral') ?? 'neutral';
-  return <span className={`badge badge-${t}`}><i aria-hidden />{label ?? (status ? STATUS_LABEL[status] ?? status : '')}</span>;
+  return <span className={`badge badge-${t}`}><i aria-hidden />{label ?? (status ? tr(STATUS_LABEL[status] ?? status) : '')}</span>;
 }
 
 export function ProgressBar({ value, tone = 'teal', label }: { value: number; tone?: 'teal' | 'yellow' | 'terra'; label?: string }) {
@@ -98,9 +99,9 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
   return (
     <div className="empty empty-error" role="alert">
       <div className="empty-icon"><AlertTriangle size={22} /></div>
-      <h4>Something went wrong</h4>
+      <h4>{tr('Something went wrong')}</h4>
       <p>{message}</p>
-      {onRetry && <Button variant="outline" size="sm" icon={<RefreshCw size={14} />} onClick={onRetry}>Try again</Button>}
+      {onRetry && <Button variant="outline" size="sm" icon={<RefreshCw size={14} />} onClick={onRetry}>{tr('Try again')}</Button>}
     </div>
   );
 }
@@ -144,7 +145,7 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}>
-        <header><h3>{title}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18} /></button></header>
+        <header><h3>{title}</h3><button className="icon-btn" onClick={onClose} aria-label={tr('Close')}><X size={18} /></button></header>
         <div className="modal-body">{children}</div>
         {footer && <footer>{footer}</footer>}
       </div>

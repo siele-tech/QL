@@ -42,9 +42,9 @@ export function BehaviourPage() {
               <div className="stat"><span className="num">{b.completedLoans}</span><span>Completed loans</span></div>
               <div className="stat"><span className="num">{b.early}</span><span>Repaid early</span></div>
               <div className="stat"><span className="num">{b.late}</span><span>Repaid late</span></div>
-              <div className={`stat ${b.overdue ? 'bad' : ''}`}><span className="num">{b.overdue}</span><span>Overdue now</span></div>
+              <div className={`stat ${b.overdue ? 'bad' : ''}`}><span className="num">{b.overdue}</span><span>Late now</span></div>
             </div>
-            {b.defaulted > 0 && <p className="small text-bad" style={{ margin: 0 }}>{plural(b.defaulted, 'loan')} went into default. Clearing overdue balances is the first step to rebuilding your record.</p>}
+            {b.defaulted > 0 && <p className="small text-bad" style={{ margin: 0 }}>{plural(b.defaulted, 'loan')} went unpaid for too long. Paying what is late is the first step to rebuilding your record.</p>}
             <Card title="Milestones">
               <div className="list">{b.achievements.list.map((a: any) => (
                 <div key={a.key} className="list-item">

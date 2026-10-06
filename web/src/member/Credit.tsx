@@ -30,7 +30,7 @@ function explain(latest: any): { means: string; next: string } {
   };
   return {
     means: 'Your score is low. Lenders may ask for more information or decline a loan.',
-    next: 'Pay any overdue amounts first, then repay on time. Scores recover gradually with a clean record.',
+    next: 'Pay anything that is late first, then pay on time. Scores recover gradually with a clean record.',
   };
 }
 

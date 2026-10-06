@@ -174,3 +174,32 @@ test('member journey: quote → apply → auto-approved → disbursed → partia
   const notes = (await john.get('/api/member/notifications')).body.map((n: any) => n.type);
   for (const t of ['LOAN_DISBURSED', 'PAYMENT_RECEIVED', 'LOAN_REPAID', 'PAYMENT_FAILED']) assert.ok(notes.includes(t), t);
 });
+
+test('repayment prompt can be sent again: only after a wait, only by its owner, and never once the money is in', async () => {
+  const loan = (await mary.get('/api/member/home')).body.currentLoan;
+  const amount = (await mary.get('/api/member/loans/' + loan.id)).body.product.allowPartial ? 100 : loan.outstanding;
+  const first = await mary.post('/api/member/loans/' + loan.id + '/repay', { amount });
+  assert.equal(first.status, 202);
+
+  // straight away is too soon, and another member cannot touch it
+  const soon = await mary.post('/api/member/payments/' + first.body.id + '/resend');
+  assert.equal(soon.status, 409);
+  assert.equal(soon.body.error.code, 'RESEND_TOO_SOON');
+  assert.equal((await john.post('/api/member/payments/' + first.body.id + '/resend')).status, 404);
+
+  // a prompt that never arrived: still pending half a minute later
+  db.run('UPDATE payment_transactions SET created_at = ? WHERE id = ?', new Date(Date.now() - 30_000).toISOString(), first.body.id);
+  const again = await mary.post('/api/member/payments/' + first.body.id + '/resend');
+  assert.equal(again.status, 202, JSON.stringify(again.body));
+  assert.notEqual(again.body.id, first.body.id);
+  assert.equal(again.body.amount, amount);
+  assert.equal(again.body.phone, first.body.phone);
+  // the first request was not cancelled: if it is approved after all, the money still counts
+  assert.equal(db.get('SELECT status FROM payment_transactions WHERE id = ?', first.body.id)!.status, 'PENDING');
+
+  const done = await until(() => mary.get('/api/member/payments/' + again.body.id), (r) => r.body.status !== 'PENDING');
+  assert.equal(done.body.status, 'SUCCESS');
+  const late = await mary.post('/api/member/payments/' + again.body.id + '/resend');
+  assert.equal(late.status, 409);
+  assert.equal(late.body.error.code, 'PAYMENT_RECEIVED');
+});

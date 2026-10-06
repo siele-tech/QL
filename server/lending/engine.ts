@@ -245,7 +245,7 @@ export function payoff(loan: any) {
 }
 
 /** Member-initiated repayment via the payment provider (M-PESA STK push). */
-export async function initiateRepayment(actor: Actor, loanId: string, amount: number, phoneOverride?: string) {
+export async function initiateRepayment(actor: Actor, loanId: string, amount: number, phoneOverride?: string, opts: { resend?: boolean } = {}) {
   const loan = loadLoan(actor, loanId);
   if (!REPAYABLE.includes(loan.status)) throw badRequest('This loan has no balance to repay.');
   const { outstanding: bal, payoffAmount, product } = payoff(loan);
@@ -253,7 +253,7 @@ export async function initiateRepayment(actor: Actor, loanId: string, amount: nu
   if (amount > bal) throw badRequest(`The amount is more than your balance of KES ${bal.toLocaleString()}.`);
   if (amount < payoffAmount && !product.allow_partial) throw badRequest(`This loan must be repaid in full (KES ${payoffAmount.toLocaleString()}).`, 'FULL_REPAYMENT_REQUIRED');
   const pending = db.get(`SELECT id, created_at FROM payment_transactions WHERE loan_id = ? AND direction = 'COLLECTION' AND status = 'PENDING'`, loanId);
-  if (pending && Date.now() - Date.parse(pending.created_at) < 120_000) throw new AppError(409, 'PAYMENT_IN_PROGRESS', 'A payment for this loan is already in progress. Please complete it on your phone.');
+  if (!opts.resend && pending && Date.now() - Date.parse(pending.created_at) < 120_000) throw new AppError(409, 'PAYMENT_IN_PROGRESS', 'A payment for this loan is already in progress. Please complete it on your phone.');
   const member = db.get('SELECT phone FROM members WHERE id = ?', loan.member_id)!;
   const tx = await initiatePayment({
     direction: 'COLLECTION', organizationId: loan.organization_id, memberId: loan.member_id, phone: phoneOverride || member.phone,
@@ -261,6 +261,23 @@ export async function initiateRepayment(actor: Actor, loanId: string, amount: nu
   });
   if (tx.status === 'FAILED') notifyLater(loan.member_id, 'PAYMENT_FAILED', { amount }, { sms: false });
   return tx;
+}
+
+/** How long a member waits before the M-PESA prompt can be sent again. */
+export const RESEND_PROMPT_AFTER_MS = 20_000;
+
+/**
+ * The M-PESA prompt never reached the phone: send another for the same loan, amount and number.
+ * The first request is left pending, not cancelled — if it is approved after all, that money must
+ * still be applied to the loan.
+ */
+export async function resendRepaymentPrompt(actor: Actor, txId: string) {
+  const old = db.get(`SELECT * FROM payment_transactions WHERE id = ? AND member_id = ? AND direction = 'COLLECTION' AND loan_id IS NOT NULL`, txId, actor.id);
+  if (!old || old.purpose === 'ROLLOVER') throw notFound('Payment');
+  if (old.status === 'SUCCESS') throw new AppError(409, 'PAYMENT_RECEIVED', 'This payment has already been received.');
+  if (old.status !== 'PENDING') throw new AppError(409, 'PAYMENT_NOT_PENDING', 'This payment did not go through. Please start the payment again.');
+  if (clock.now().getTime() - Date.parse(old.created_at) < RESEND_PROMPT_AFTER_MS) throw new AppError(409, 'RESEND_TOO_SOON', 'Please wait a moment before sending the request again.');
+  return initiateRepayment(actor, old.loan_id, old.amount, old.phone, { resend: true });
 }
 
 onPaymentCompleted('COLLECTION', (tx) => {

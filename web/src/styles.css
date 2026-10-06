@@ -334,7 +334,7 @@ body.member-body { background: var(--cream-dark); }
   .check { padding: .7rem 0; min-height: 44px; }
   .check input { width: 22px; height: 22px; }
   .list-item { min-height: 56px; }
-  .m-content a:not(.btn):not(.list-item):not(.card):not(.offer-card):not(.chip) { padding-block: .6rem; display: inline-block; }
+  .m-content a:not(.btn):not(.list-item):not(.card):not(.offer-card):not(.offer-row):not(.chip) { padding-block: .6rem; display: inline-block; }
   .li-title { white-space: normal; }
   .m-nav a { min-height: 52px; justify-content: center; }
   .kv > div { gap: .6rem; }
@@ -586,3 +586,83 @@ details.more[open] summary::after { content: "−"; }
 
 .amount-row.single { grid-template-columns: minmax(0, 1fr); }
 .amount-row.single .amount-input { padding-right: 2.4rem; }
+
+/* choose-one rows (language) */
+.opts { display: grid; gap: 11px; }
+.opts-tell { margin: 0; color: var(--muted); }
+.opt { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 16px; text-align: left; cursor: pointer; transition: border-color .16s, background .16s; }
+.opt.on { border-color: var(--teal); background: var(--teal-tint); }
+.opt-ic { width: 46px; height: 46px; border-radius: 15px; flex: none; background: var(--cream); color: var(--muted); display: grid; place-items: center; }
+.opt.on .opt-ic { background: transparent; color: var(--teal); }
+.opt-nm { flex: 1; min-width: 0; font-family: var(--display); font-weight: 700; font-size: 1.08rem; letter-spacing: -.01em; color: var(--charcoal); }
+.opt-tick { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; color: transparent; }
+.opt.on .opt-tick { background: var(--teal); border-color: var(--teal); color: #fff; }
+/* ask for the M-PESA request again */
+.resend { display: grid; gap: .5rem; }
+
+/* ───────── Polish: figures, surfaces, home ───────── */
+/* Raleway draws old-style figures by default (the 3, 5 and 7 drop below the line); amounts need them level. */
+body { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+.num, .g-value, .hero .big, .kv dd, .li-end, .amount-input, .pick, .tab-count { font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum" 1, "tnum" 1; }
+
+.card, .offer-card { border-radius: 14px; }
+.card { box-shadow: 0 1px 2px rgba(31,46,58,.05), 0 6px 20px rgba(31,46,58,.05); }
+.card-head h3 { font-size: 1.05rem; }
+.group-title { display: flex; align-items: center; gap: .6rem; font-size: .74rem; letter-spacing: .14em; color: var(--teal); margin: .5rem 0 .6rem; }
+.group-title::before { content: ""; width: 22px; height: 2px; background: currentColor; flex: none; }
+
+/* hero: a faint grid under the glow, and a button that does not span a whole desktop column */
+.hero { border-radius: 18px; box-shadow: 0 14px 30px -18px rgba(4,94,92,.7); background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%); background-size: 44px 44px, 44px 44px, auto; }
+.hero.overdue { box-shadow: 0 14px 30px -18px rgba(163,64,43,.75); }
+.hero .big { display: flex; align-items: baseline; gap: .45rem; }
+.hero .big small { margin-right: 0; font-size: .42em; letter-spacing: .04em; }
+.hero .meta { justify-content: flex-start; gap: .4rem 1.1rem; }
+.hero .meta > span + span::before { content: "·"; margin-right: 1.1rem; opacity: .6; }
+.hero .btn-primary { box-shadow: 0 6px 16px -8px rgba(0,0,0,.45); }
+
+/* loan offers: one quiet list, the amount on the right */
+.offer-list { padding: .25rem 1.15rem; }
+.offer-row { display: flex; align-items: center; gap: .85rem; padding: .95rem 0; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none !important; min-width: 0; }
+.offer-row:last-child { border-bottom: 0; }
+.offer-name { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-family: var(--display); font-weight: 700; font-size: 1.02rem; color: var(--navy); }
+a.offer-row:hover .offer-name { color: var(--teal); }
+a.offer-row:hover .li-icon { background: var(--teal); color: #fff; }
+.offer-row .li-icon { transition: background .15s, color .15s; }
+.offer-max { text-align: right; flex-shrink: 0; }
+.offer-max .g-label { font-size: .72rem; }
+.offer-row.later .offer-name { color: var(--body-text); font-size: .98rem; }
+.hint-row { display: flex; align-items: center; gap: .5rem; margin: 0; padding: .7rem .9rem; border-radius: 10px; background: var(--cream-dark); color: var(--body-text); font-size: .88rem; }
+.hint-row svg { flex: none; color: var(--muted); }
+
+/* notifications: unread is a bold title and a small "New", not a striped row */
+.notif.unread { background: none; border-left: 0; margin-inline: 0; padding-inline: 0; border-radius: 0; }
+.n-new { background: var(--teal-tint); color: var(--teal-dark); border-radius: 999px; padding: .02rem .45rem; font-size: .68rem; letter-spacing: .02em; }
+.n-type { color: var(--muted); font-size: .68rem; letter-spacing: .1em; }
+.n-time { margin-left: auto; color: var(--muted); }
+.notif .li-title { margin: .1rem 0 .15rem; }
+.notif .li-sub { font-size: .84rem; line-height: 1.5; }
+
+/* loan cards: the status badge carries the colour, the card stays plain */
+.loan-card { border-left: 0; padding: 1.15rem 1.25rem; transition: transform .15s, box-shadow .15s; }
+a.loan-card:hover, a.behaviour-row:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(31,46,58,.06), 0 10px 26px rgba(31,46,58,.09); }
+.behaviour-row { transition: transform .15s, box-shadow .15s; }
+.tabs button { border-radius: 8px; padding: .5rem .95rem; font-size: .84rem; }
+.tab-count { background: rgba(54,72,86,.08); border-radius: 999px; padding: .05rem .42rem; font-size: .72rem; opacity: 1; }
+.tabs button.active .tab-count { background: rgba(255,255,255,.22); }
+
+@media (min-width: 900px) {
+  .m-web nav a { justify-content: flex-start; gap: .75rem; padding: .72rem .85rem; border-radius: 8px; color: var(--navy); }
+  .m-web nav a svg { color: var(--muted); flex: none; }
+  .m-web nav a.active svg, .m-web nav a:hover svg { color: var(--teal); }
+  .m-web nav a.active { box-shadow: none; font-weight: 700; }
+  .m-main { max-width: 1160px; padding: 2rem 2.5rem 3rem; }
+  .m-top { padding-bottom: 1.2rem; }
+  .hello { font-size: 1.75rem; letter-spacing: -.02em; } .hello small { font-size: .9rem; margin-top: .1rem; }
+  .m-cols { gap: 1.5rem; }
+  .hero { padding: 2rem; gap: 1rem; } .hero .big { font-size: 3.2rem; }
+  .hero > .btn-block { width: auto; justify-self: start; min-width: 260px; }
+  .card { padding: 1.35rem; }
+  .offer-list { padding: .35rem 1.35rem; }
+}
+@media (max-width: 899px) { .offer-row > svg { display: none; } .offer-list { padding-inline: 1rem; } .offer-row { gap: .7rem; } }
+@media (min-width: 900px) { .m-mid { max-width: 760px; } }
