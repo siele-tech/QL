@@ -1,0 +1,18 @@
+{
+  "name": "QuickLoan",
+  "short_name": "QuickLoan",
+  "description": "Short-term loans from your SACCO or lender.",
+  "start_url": "/member",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf6f6",
+  "theme_color": "#057573",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
